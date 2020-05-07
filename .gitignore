@@ -15,3 +15,11 @@ yarn-error.log*
 
 # frontend
 node_modules
+frontend/dist
+frontend/webpack_cache
+
+# backend
+__pycache__
+db.sqlite3
+*.pyc
+.idea/
