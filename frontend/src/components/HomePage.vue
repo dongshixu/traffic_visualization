@@ -61,6 +61,26 @@
           margin: 0 0 0 10%;
         }
       }
+      .toolbar-top-cluter{
+        display: flex;
+        align-content: center;
+        justify-items: center;
+        span{
+          flex: 5;
+        }
+        .toolbar-top-cluter-span1{
+          border: 1px dashed #cccccc;
+          border-width: 0 1px 0 0;
+        }
+      }
+      .toolbar-top-cluter-select{
+        display: flex;
+        align-content: center;
+        justify-items: center;
+        input{
+          flex: 5;
+        }
+      }
     }
   }
   .toolbar-middle, .toolbar-bottom{
@@ -109,6 +129,60 @@
       <div :class="['toolbar-top']">
         <div>
           <p>
+            <span :style={}># 日期选择:</span>
+          </p>
+          <p>
+            <el-date-picker
+              v-model="timeValue"
+              type="date"
+              placeholder="选择日期"
+              size=mini
+            >
+            </el-date-picker>
+          </p>
+        </div>
+        <div>
+          <p>
+            <span :style={}># 颜色选择:</span>
+          </p>
+          <p>
+            <!-- <input type="text" name="" id="" placeholder="schemeCategory10"> -->
+            <el-select v-model="colorValue" placeholder="请选择" size=mini>
+              <el-option
+                v-for="item in colorOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </p>
+        </div>
+        <div>
+          <p :class="['toolbar-top-cluter']">
+            <span :class="['toolbar-top-cluter-span1']" :style={}># 聚类:</span>
+            <span :class="['toolbar-top-cluter-span2']" :style={}># 采样:</span>
+          </p>
+          <p :class="['toolbar-top-cluter-select']">
+            <el-select v-model="cluter" placeholder="请选择" size=mini>
+              <el-option
+                v-for="item in cluterOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+            <el-select v-model="sample" placeholder="请选择" size=mini>
+              <el-option
+                v-for="item in sampleOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </p>
+        </div>
+        <div>
+          <p>
             <span :style={}># OD展示:</span>
           </p>
           <p >
@@ -124,30 +198,6 @@
             @click="track()"
             >OD轨迹
             </button>
-          </p>
-        </div>
-        <div>
-          <p>
-            <span :style={}># 聚类:</span>
-          </p>
-          <p>
-            <input type="text" name="" id="" placeholder="0" v-model="cluter">
-          </p>
-        </div>
-        <div>
-          <p>
-            <span :style={}># 采样:</span>
-          </p>
-          <p>
-            <input type="text" name="" id="" placeholder="1" v-model="sample">
-          </p>
-        </div>
-        <div>
-          <p>
-            <span :style={}># 颜色选择:</span>
-          </p>
-          <p>
-            <input type="text" name="" id="" placeholder="schemeCategory10">
           </p>
         </div>
       </div>
@@ -178,7 +228,55 @@ export default {
       testData: {'0': [1261, 480, 348, 1518, 789, 49, 20, 1557, 596, 1107], '1': [0, 0, 1, 0, 0, 0, 0, 0, 0, 0], '2': [1384, 1849, 280, 3145, 3128, 269, 73, 2900, 2220, 1891], '3': [0, 0, 0, 0, 0, 0, 0, 1, 0, 0], '4': [459, 132, 1332, 513, 274, 101, 48, 384, 215, 345], '5': [488, 2112, 165, 1489, 2021, 362, 27, 1749, 629, 561], '6': [52, 466, 42, 227, 287, 403, 5, 138, 92, 51], '7': [1305, 1157, 198, 1952, 1496, 115, 89, 2149, 759, 827], '8': [491, 450, 140, 1820, 1272, 111, 32, 1018, 1853, 851], '9': [74, 109, 35, 104, 94, 18, 47, 189, 56, 32]},
       testRawData: '',
       sample: 1,
-      cluter: 0
+      cluter: 0,
+      timeValue: '2017-05-01',
+      colorValue: 'color1',
+      cluterOptions: [
+        {
+          value: 0,
+          lable: 0
+        },
+        {
+          value: 5,
+          lable: 5
+        },
+        {
+          value: 10,
+          lable: 10
+        },
+        {
+          value: 20,
+          lable: 20
+        }
+      ],
+      sampleOptions: [
+        {
+          value: 1,
+          lable: 1
+        },
+        {
+          value: 0.5,
+          lable: 0.5
+        },
+        {
+          value: 0.3,
+          lable: 0.3
+        },
+        {
+          value: 0.1,
+          lable: 0.1
+        }
+      ],
+      colorOptions: [
+        {
+          value: 'color1',
+          lable: 10
+        },
+        {
+          value: 'color2',
+          lable: 20
+        }
+      ]
     }
   },
   watch: {
@@ -349,7 +447,6 @@ export default {
         .attr('class', 'colorRect')
     },
     drawLineChart (data) {
-      // console.log(data)
       let spiltDataX = []
       let spiltDataY = []
       data.forEach(res => {
