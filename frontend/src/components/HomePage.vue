@@ -91,6 +91,9 @@
     border-radius: 3%;
     display: flex;
     flex-direction: column;
+    .ppp{
+      padding: 10% 0 0 0;
+    }
     span{
         font-size: 14px;
         font-weight: 700;
@@ -102,6 +105,9 @@
   }
   .toolbar-bottom{
     height: 40%;
+    .matrixChart{
+      margin: 10% 0 0 0;
+    }
   }
   .theam{
     position: absolute;
@@ -137,6 +143,7 @@
               type="date"
               placeholder="选择日期"
               size=mini
+              value-format="yyyy-MM-dd"
             >
             </el-date-picker>
           </p>
@@ -168,7 +175,9 @@
                 v-for="item in clusterOptions"
                 :key="item.value"
                 :label="item.label"
-                :value="item.value">
+                :value="item.value"
+                :disabled="item.disabled"
+              >
               </el-option>
             </el-select>
             <el-select v-model="sample" placeholder="请选择" size=mini>
@@ -205,7 +214,7 @@
         <span>* OD 聚类分布图</span>
       </div>
       <div :class="['toolbar-bottom']">
-        <span>* OD 矩阵图</span>
+        <span :class="['ppp']">* OD 矩阵图</span>
       </div>
       <div></div>
     </div>
@@ -247,7 +256,8 @@ export default {
         },
         {
           value: 20,
-          lable: 20
+          lable: 20,
+          disabled: true
         }
       ],
       sampleOptions: [
@@ -277,20 +287,22 @@ export default {
           value: 'color2',
           lable: 20
         }
-      ]
+      ],
+      dateRange: ['2017-05-01', '2017-05-02', '2017-05-03']
     }
   },
   watch: {
-    sample: function () {
-      console.log(this.sample)
+    timeValue: function () {
+      if (this.dateRange.indexOf(this.timeValue)) {
+        this.getDataTest(this.timeValue)
+      } else {
+        this.getDataTest('2017-05-01')
+      }
     }
   },
   mounted () {
     this.initMap()
-    // this.getData('2017-05-01', 10)
-    this.getDataTest()
-    this.drawODMatrix(this.testData)
-    // console.log(d3)
+    this.getDataTest('2017-05-01')
   },
   methods: {
     initMap () {
@@ -309,6 +321,7 @@ export default {
       d3.selectAll('.circle').remove()
       d3.selectAll('.road').remove()
       d3.select('.lineChart').remove()
+      d3.select('.matrixChart').remove()
       let sampleTemp = this.sample.toString()
       let clusterTemp = this.cluster.toString()
       let colorTemp = this.colorValue
@@ -324,11 +337,15 @@ export default {
         this.drawSignalCircle(val[0], 'circle ' + cn, this.color[val[2][0]], 1)
       })
       let lineChartData = this.dataContainer['cluster'][clusterTemp]['statistic'][sampleTemp][0]['o']
+      let matrixOD = this.dataContainer['cluster'][clusterTemp]['statistic'][sampleTemp][1]
       this.drawLineChart(lineChartData)
+      this.drawODMatrix(matrixOD)
     },
     destination () {
       d3.selectAll('.circle').remove()
       d3.selectAll('.road').remove()
+      d3.select('.lineChart').remove()
+      d3.select('.matrixChart').remove()
       let sampleTemp = this.sample.toString()
       let clusterTemp = this.cluster.toString()
       let colorTemp = this.colorValue
@@ -343,10 +360,16 @@ export default {
         let cn = 'circle' + val[2][1]
         this.drawSignalCircle(val[1], 'circle ' + cn, this.color[val[2][1]], 1)
       })
+      let lineChartData = this.dataContainer['cluster'][clusterTemp]['statistic'][sampleTemp][0]['d']
+      let matrixOD = this.dataContainer['cluster'][clusterTemp]['statistic'][sampleTemp][1]
+      this.drawLineChart(lineChartData)
+      this.drawODMatrix(matrixOD)
     },
     track () {
       d3.selectAll('.circle').remove()
       d3.selectAll('.road').remove()
+      d3.select('.lineChart').remove()
+      d3.select('.matrixChart').remove()
       let sampleTemp = this.sample.toString()
       let clusterTemp = this.cluster.toString()
       let colorTemp = this.colorValue
@@ -360,6 +383,10 @@ export default {
       currentData[sampleTemp].forEach((val, i) => {
         this.drawSignalLine([val[0], val[1]], this.color[val[2][0]], val[2][0])
       })
+      let lineChartData = this.dataContainer['cluster'][clusterTemp]['statistic'][sampleTemp][0]['o']
+      let matrixOD = this.dataContainer['cluster'][clusterTemp]['statistic'][sampleTemp][1]
+      this.drawLineChart(lineChartData)
+      this.drawODMatrix(matrixOD)
     },
     onMapclick (e) {
       console.log(e.latlng)
@@ -423,9 +450,10 @@ export default {
       //   this.drawLineChart(lineChartData)
       })
     },
-    async getDataTest () {
+    async getDataTest (date) {
+      let dateString = date + '.json'
       try {
-        let res = await axios.get('../../static/2017-05-01.json')
+        let res = await axios.get('../../static/' + dateString)
         this.dataContainer = res.data
       } catch (err) {
         console.log(err)
@@ -440,14 +468,14 @@ export default {
           dataTransfer.push(val)
         })
       })
-      console.log(len)
-      let compute = d3.interpolate('#076383', '#e9f6fa')
-      let constants = {width: 280, height: 320, top: 40, left: 20, right: 20, bottom: 40}
+      let compute = d3.interpolate('#e9f6fa', '#076383')
+      let constants = {width: 280, height: 320, top: 60, left: 25, right: 15, bottom: 40}
       let maxWidth = constants.width - constants.left - constants.right
       let maxHeight = constants.height - constants.top - constants.bottom
       let matrixChart = d3.select('.toolbar-bottom').append('svg')
         .attr('width', constants.width)
         .attr('height', constants.height)
+        .attr('margin', '10% 0 0 0')
         .attr('class', 'matrixChart')
       const xScale = d3.scaleLinear()
         .domain([0, len])
@@ -456,7 +484,15 @@ export default {
         .domain([d3.min(dataTransfer), d3.max(dataTransfer)])
         .range([0, 1])
       let rectHeight = xScale(1) - xScale(0)
+      const axisLeft = d3.axisLeft(xScale).ticks(5)
+      matrixChart.append('g')
+        .attr('transform', `translate(${constants.left - 1}, ${constants.top - 21})`)
+        .call(axisLeft)
+      const axisTop = d3.axisTop(xScale).ticks(5)
       console.log(rectHeight)
+      matrixChart.append('g')
+        .attr('transform', `translate(${constants.left - 1}, ${constants.top - 21})`)
+        .call(axisTop)
       matrixChart.append('g')
         .selectAll('colorRect')
         .data(dataTransfer)
@@ -468,6 +504,8 @@ export default {
         .attr('y', (d, i) => maxHeight - rectHeight - parseInt(i / len) * rectHeight)
         .attr('width', rectHeight)
         .attr('height', rectHeight)
+        .attr('stroke-width', '0.5')
+        .attr('stroke', 'white')
         .attr('class', 'colorRect')
     },
     drawLineChart (data) {

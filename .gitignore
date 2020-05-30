@@ -17,6 +17,7 @@ yarn-error.log*
 node_modules
 frontend/dist
 frontend/webpack_cache
+frontend/static
 
 # backend
 __pycache__
