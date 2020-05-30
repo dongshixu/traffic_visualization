@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "axios": "^0.19.2",
-    "heatmap.js": "^2.0.5"
-  }
-}
